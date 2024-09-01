@@ -1,25 +1,27 @@
 #!/bin/bash
 
-# splash.png 파일 다운로드
+# 시스템 패키지 업데이트 및 업그레이드
+sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
+
+# 폰트 설치
+sudo apt install -y fonts-nanum fonts-unfonts-core
+
+# wget, apt-transport-https, gnupg 설치
+sudo apt-get install -y wget apt-transport-https gnupg
+
+# Adoptium GPG 키 추가
+wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | sudo apt-key add -
+
+# Adoptium 패키지 저장소 추가
+echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | sudo tee /etc/apt/sources.list.d/adoptium.list
+
+# 패키지 목록 업데이트
+sudo apt update
+
+# Temurin 17 JDK 설치
+sudo apt-get install -y temurin-17-jdk
+
+# 스플래시 이미지 다운로드 및 적용
 wget https://raw.githubusercontent.com/apwlq/bmt_raspi/main/splash.png -O splash.png
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to download splash.png"
-  exit 1
-fi
-
-# 파일을 /usr/share/plymouth/themes/pix로 복사
 sudo cp splash.png /usr/share/plymouth/themes/pix
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to copy splash.png to /usr/share/plymouth/themes/pix"
-  exit 1
-fi
-
-# 테마를 기본으로 설정하고 initrd를 재구성
 sudo plymouth-set-default-theme --rebuild-initrd pix
-if [ $? -ne 0 ]; then
-  echo "Error: Failed to set the default Plymouth theme"
-  exit 1
-fi
-
-# 성공 메시지 출력
-echo "Setup completed successfully."
